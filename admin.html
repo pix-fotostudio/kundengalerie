@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Pix Fotostudio – Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg-creme: #fdfcf8;
+    --glass-bg: rgba(255,255,255,0.65);
+    --glass-border: rgba(255,255,255,0.8);
+    --accent: #b87c55;
+    --accent-light: #d4a07a;
+    --text-dark: #2d2520;
+    --text-mid: #7a6a60;
+    --text-light: #b5a89e;
+    --radius: 16px;
+    --radius-sm: 10px;
+    --ok: #4a9d6f;
+    --err: #c0614a;
+  }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg-creme);
+    color: var(--text-dark);
+    min-height: 100vh;
+    padding: 40px 20px 80px;
+  }
+  h1, h2, h3 { font-family: 'Cormorant Garamond', serif; font-weight: 400; }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  .logo { font-size: 12px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+  .title { font-size: 32px; margin-bottom: 30px; }
+  .card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--radius);
+    box-shadow: 0 8px 40px rgba(120,100,80,0.12);
+    padding: 28px 28px 30px;
+    margin-bottom: 24px;
+  }
+  .card h2 { font-size: 22px; margin-bottom: 4px; }
+  .card .hint { font-size: 13px; color: var(--text-mid); margin-bottom: 18px; }
+  label { display: block; font-size: 12px; letter-spacing: 0.05em; text-transform: uppercase; color: var(--text-mid); font-weight: 500; margin-bottom: 6px; }
+  input[type=text], input[type=password] {
+    width: 100%; padding: 12px 14px; margin-bottom: 16px;
+    background: rgba(255,255,255,0.7);
+    border: 1.5px solid rgba(200,185,170,0.5);
+    border-radius: var(--radius-sm);
+    font-family: 'DM Sans', sans-serif; font-size: 14px;
+    color: var(--text-dark); outline: none;
+  }
+  input:focus { border-color: var(--accent-light); box-shadow: 0 0 0 3px rgba(184,124,85,0.12); }
+  .row { display: flex; gap: 10px; }
+  .row input { flex: 1; }
+  .field-with-btn { display: flex; gap: 8px; margin-bottom: 16px; }
+  .field-with-btn input { margin-bottom: 0; }
+  button {
+    font-family: 'DM Sans', sans-serif; cursor: pointer; border: none;
+    border-radius: var(--radius-sm); font-size: 13px; font-weight: 500;
+    letter-spacing: 0.06em;
+  }
+  .btn-primary {
+    width: 100%; padding: 14px;
+    background: linear-gradient(135deg, var(--accent), #c98e65);
+    color: #fff; text-transform: uppercase; font-size: 13px;
+    box-shadow: 0 4px 18px rgba(184,124,85,0.3);
+    transition: transform .15s;
+  }
+  .btn-primary:hover:not(:disabled) { transform: translateY(-1px); }
+  .btn-primary:disabled { opacity: 0.5; cursor: default; }
+  .btn-secondary {
+    padding: 12px 16px;
+    background: rgba(200,185,170,0.25);
+    color: var(--text-dark);
+  }
+  .btn-secondary:hover { background: rgba(184,124,85,0.2); }
+  .btn-danger { background: rgba(192,97,74,0.12); color: var(--err); }
+  .btn-danger:hover { background: rgba(192,97,74,0.22); }
+  .btn-small { padding: 7px 12px; font-size: 12px; }
+
+  #drop-zone {
+    border: 2px dashed rgba(184,124,85,0.4);
+    border-radius: var(--radius-sm);
+    padding: 26px; text-align: center;
+    color: var(--text-mid); font-size: 13px;
+    cursor: pointer; margin-bottom: 14px;
+    transition: background .2s, border-color .2s;
+  }
+  #drop-zone.drag { background: rgba(184,124,85,0.08); border-color: var(--accent); }
+  #file-input { display: none; }
+
+  .file-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; max-height: 220px; overflow-y: auto; }
+  .file-item {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(200,185,170,0.3);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px;
+  }
+  .file-item .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .file-item .size { color: var(--text-light); font-size: 11px; }
+  .file-item .remove { color: var(--text-light); cursor: pointer; font-size: 15px; background: none; border: none; }
+  .file-item .remove:hover { color: var(--err); }
+
+  .gallery-list { display: flex; flex-direction: column; gap: 8px; }
+  .gallery-row {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(255,255,255,0.6);
+    border: 1px solid rgba(200,185,170,0.3);
+    border-radius: 8px; padding: 10px 14px;
+  }
+  .gallery-row .slug { flex: 1; font-size: 14px; font-weight: 500; }
+  .gallery-row .count { font-size: 12px; color: var(--text-light); }
+
+  #log {
+    font-family: monospace; font-size: 12px; line-height: 1.6;
+    background: rgba(45,37,32,0.05); border-radius: var(--radius-sm);
+    padding: 14px; max-height: 220px; overflow-y: auto; white-space: pre-wrap;
+    display: none;
+  }
+  #log.show { display: block; margin-top: 14px; }
+  .log-ok { color: var(--ok); }
+  .log-err { color: var(--err); }
+  .log-mid { color: var(--text-mid); }
+
+  #screen-login { display: flex; align-items: center; justify-content: center; min-height: 80vh; }
+  .login-card { max-width: 380px; width: 100%; text-align: center; }
+  .login-card .btn-primary { margin-top: 6px; }
+  .login-error { font-size: 13px; color: var(--err); min-height: 18px; margin-bottom: 6px; }
+
+  .top-actions { display: flex; justify-content: flex-end; margin-bottom: 10px; }
+  .link-btn { background: none; border: none; color: var(--text-mid); font-size: 12px; text-decoration: underline; cursor: pointer; }
+  .link-btn:hover { color: var(--accent); }
+
+  .badge { display: inline-block; font-size: 10px; letter-spacing: .05em; text-transform: uppercase; padding: 3px 8px; border-radius: 20px; background: rgba(184,124,85,0.15); color: var(--accent); margin-left: 8px; }
+</style>
+</head>
+<body>
+
+<!-- ═══ LOGIN GATE ═══ -->
+<div id="screen-login">
+  <div class="card login-card">
+    <div class="logo">Pix Fotostudio</div>
+    <h1 class="title" style="margin-bottom:6px;">Admin</h1>
+    <p class="hint" style="margin-bottom:24px;">Nur für dich – bitte Admin-Passwort eingeben.</p>
+    <div class="login-error" id="login-error"></div>
+    <input type="password" id="admin-pw" placeholder="Admin-Passwort" autocomplete="current-password"
+           onkeydown="if(event.key==='Enter') adminLogin()" />
+    <button class="btn-primary" onclick="adminLogin()">Anmelden</button>
+  </div>
+</div>
+
+<!-- ═══ MAIN ADMIN UI ═══ -->
+<div class="wrap" id="screen-admin" style="display:none;">
+  <div class="top-actions">
+    <button class="link-btn" onclick="logout()">Abmelden</button>
+  </div>
+  <div class="logo">Pix Fotostudio</div>
+  <h1 class="title">Galerien verwalten</h1>
+
+  <!-- GitHub Token -->
+  <div class="card">
+    <h2>GitHub-Zugang</h2>
+    <p class="hint">Wird nur lokal in diesem Browser gespeichert (localStorage) und ausschließlich an GitHub gesendet.</p>
+    <div class="field-with-btn">
+      <input type="password" id="gh-token" placeholder="GitHub Personal Access Token (ghp_…)" />
+      <button class="btn-secondary" onclick="saveToken()">Speichern</button>
+    </div>
+    <div id="token-status" style="font-size:12px;color:var(--text-mid);"></div>
+  </div>
+
+  <!-- Create / Update Gallery -->
+  <div class="card">
+    <h2 id="form-title">Neue Galerie erstellen</h2>
+    <p class="hint">Lege eine neue Kundengalerie an oder wähle unten eine bestehende zum Bearbeiten aus.</p>
+
+    <label>Galerie-Kennung (slug)</label>
+    <input type="text" id="gal-slug" placeholder="z. B. mueller-hochzeit-2026" oninput="slugify(this)" />
+
+    <label>Kundenpasswort</label>
+    <div class="field-with-btn">
+      <input type="text" id="gal-password" placeholder="Passwort für den Kunden" />
+      <button class="btn-secondary btn-small" onclick="genPassword()">Generieren</button>
+    </div>
+
+    <label>Fotos</label>
+    <div id="drop-zone" onclick="document.getElementById('file-input').click()">
+      Fotos hierher ziehen oder klicken zum Auswählen
+    </div>
+    <input type="file" id="file-input" multiple accept="image/*" />
+    <div class="file-list" id="file-list"></div>
+    <p class="hint" id="existing-note" style="display:none;">
+      ⚠️ Diese Galerie hat bereits Fotos. Neue Auswahl <b>ersetzt alle bisherigen Fotos</b> dieser Galerie.
+    </p>
+
+    <button class="btn-primary" id="save-btn" onclick="saveGallery()">Galerie speichern &amp; hochladen</button>
+    <button class="btn-secondary" style="width:100%;margin-top:8px;" onclick="resetForm()">Neues Formular / Abbrechen</button>
+
+    <div id="log"></div>
+  </div>
+
+  <!-- Existing galleries -->
+  <div class="card">
+    <h2>Bestehende Galerien</h2>
+    <p class="hint">Klicke auf eine Galerie, um Fotos zu ersetzen, das Passwort zu ändern oder sie zu löschen.</p>
+    <div class="gallery-list" id="gallery-list">
+      <p class="hint">Lade Galerien …</p>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   CONFIG — must match index.html / encrypt.py
+════════════════════════════════════════════════════════════ */
+const GITHUB_USER    = 'denkenfeld';
+const GITHUB_REPO    = 'pix';
+const GITHUB_BRANCH  = 'main';
+const GALLERIES_ROOT = 'galerie/galleries';
+const MANIFEST_PATH  = 'galerie/manifest.json';
+const PBKDF2_SALT    = 'PixStudio2026';
+const PBKDF2_ITER    = 100000;
+const SENTINEL_VALUE = 'PIX-STUDIO-VALID-2026';
+
+// Admin gate: SHA-256 hash of the admin password (hex). Default password is
+// "changeme" — CHANGE THIS before publishing this file. To generate a new
+// hash, open the browser console on this page and run:
+//   await sha256hex("dein-neues-passwort")
+// then paste the result below.
+const ADMIN_PW_HASH = 'b79ba16226a819f14726a1103cd364259bdbbc71fd8691611b6b7780526a778e';
+
+/* ════════════════════════════════════════════════════════════
+   ADMIN LOGIN (local convenience gate only — not real security)
+════════════════════════════════════════════════════════════ */
+async function sha256hex(str) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function adminLogin() {
+  const val = document.getElementById('admin-pw').value;
+  const hash = await sha256hex(val);
+  if (hash === ADMIN_PW_HASH) {
+    sessionStorage.setItem('pix-admin-ok', '1');
+    showAdmin();
+  } else {
+    document.getElementById('login-error').textContent = 'Falsches Passwort.';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('pix-admin-ok');
+  location.reload();
+}
+
+function showAdmin() {
+  document.getElementById('screen-login').style.display = 'none';
+  document.getElementById('screen-admin').style.display = 'block';
+  loadToken();
+  refreshGalleryList();
+}
+
+if (sessionStorage.getItem('pix-admin-ok') === '1') {
+  window.addEventListener('DOMContentLoaded', showAdmin);
+}
+
+/* ════════════════════════════════════════════════════════════
+   GITHUB TOKEN
+════════════════════════════════════════════════════════════ */
+function loadToken() {
+  const t = localStorage.getItem('pix-gh-token');
+  const status = document.getElementById('token-status');
+  status.textContent = t ? 'Token gespeichert ✓' : 'Kein Token gespeichert.';
+  if (t) document.getElementById('gh-token').placeholder = '•••••••••••••••• (gespeichert)';
+}
+function saveToken() {
+  const t = document.getElementById('gh-token').value.trim();
+  if (!t) return;
+  localStorage.setItem('pix-gh-token', t);
+  document.getElementById('gh-token').value = '';
+  loadToken();
+}
+function getToken() {
+  const t = localStorage.getItem('pix-gh-token');
+  if (!t) throw new Error('Kein GitHub-Token gespeichert. Bitte oben eintragen.');
+  return t;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GITHUB API HELPERS
+════════════════════════════════════════════════════════════ */
+function ghHeaders() {
+  return {
+    'Authorization': `Bearer ${getToken()}`,
+    'Accept': 'application/vnd.github+json'
+  };
+}
+
+async function ghGetFile(path) {
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
+  const resp = await fetch(url, { headers: ghHeaders() });
+  if (resp.status === 404) return null;
+  if (!resp.ok) throw new Error(`GitHub-Fehler beim Lesen von ${path}: ${resp.status}`);
+  return resp.json();
+}
+
+async function ghListDir(path) {
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
+  const resp = await fetch(url, { headers: ghHeaders() });
+  if (resp.status === 404) return [];
+  if (!resp.ok) throw new Error(`GitHub-Fehler beim Auflisten von ${path}: ${resp.status}`);
+  const data = await resp.json();
+  return Array.isArray(data) ? data : [];
+}
+
+async function ghPutFile(path, base64Content, message, sha) {
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`;
+  const body = { message, content: base64Content, branch: GITHUB_BRANCH };
+  if (sha) body.sha = sha;
+  const resp = await fetch(url, { method: 'PUT', headers: { ...ghHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`GitHub-Fehler beim Schreiben von ${path}: ${resp.status} ${t}`);
+  }
+  return resp.json();
+}
+
+async function ghDeleteFile(path, sha, message) {
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}`;
+  const resp = await fetch(url, { method: 'DELETE', headers: { ...ghHeaders(), 'Content-Type': 'application/json' }, body: JSON.stringify({ message, sha, branch: GITHUB_BRANCH }) });
+  if (!resp.ok) {
+    const t = await resp.text();
+    throw new Error(`GitHub-Fehler beim Löschen von ${path}: ${resp.status} ${t}`);
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   CRYPTO — mirrors encrypt.py exactly
+════════════════════════════════════════════════════════════ */
+async function deriveKey(password) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey('raw', enc.encode(password), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode(PBKDF2_SALT), iterations: PBKDF2_ITER, hash: 'SHA-256' },
+    keyMaterial, { name: 'AES-GCM', length: 256 }, false, ['encrypt']
+  );
+}
+
+async function encryptBytes(bytes, key) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, bytes));
+  const out = new Uint8Array(iv.length + ct.length);
+  out.set(iv, 0);
+  out.set(ct, iv.length);
+  return out;
+}
+
+function bytesToBase64(bytes) {
+  let binary = '';
+  const chunk = 0x8000;
+  for (let i = 0; i < bytes.length; i += chunk) {
+    binary += String.fromCharCode(...bytes.subarray(i, i + chunk));
+  }
+  return btoa(binary);
+}
+
+/* ════════════════════════════════════════════════════════════
+   FILE SELECTION (drag & drop + picker)
+════════════════════════════════════════════════════════════ */
+let selectedFiles = [];
+
+const dropZone  = document.getElementById('drop-zone');
+const fileInput = document.getElementById('file-input');
+
+fileInput.addEventListener('change', e => addFiles(e.target.files));
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag');
+  addFiles(e.dataTransfer.files);
+});
+
+function addFiles(fileList) {
+  for (const f of fileList) {
+    if (f.type.startsWith('image/')) selectedFiles.push(f);
+  }
+  renderFileList();
+}
+
+function renderFileList() {
+  const box = document.getElementById('file-list');
+  box.innerHTML = '';
+  selectedFiles.forEach((f, i) => {
+    const el = document.createElement('div');
+    el.className = 'file-item';
+    el.innerHTML = `<span class="name">${f.name}</span><span class="size">${(f.size/1024).toFixed(0)} KB</span>
+      <button class="remove" onclick="removeFile(${i})">×</button>`;
+    box.appendChild(el);
+  });
+}
+function removeFile(i) { selectedFiles.splice(i, 1); renderFileList(); }
+
+/* ════════════════════════════════════════════════════════════
+   FORM HELPERS
+════════════════════════════════════════════════════════════ */
+function slugify(input) {
+  input.value = input.value.toLowerCase()
+    .replace(/[^a-z0-9-]+/g, '-')
+    .replace(/-+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
+function genPassword() {
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let pw = '';
+  const rnd = crypto.getRandomValues(new Uint32Array(10));
+  for (let i = 0; i < 10; i++) pw += chars[rnd[i] % chars.length];
+  document.getElementById('gal-password').value = pw;
+}
+
+function resetForm() {
+  document.getElementById('form-title').textContent = 'Neue Galerie erstellen';
+  document.getElementById('gal-slug').value = '';
+  document.getElementById('gal-slug').disabled = false;
+  document.getElementById('gal-password').value = '';
+  selectedFiles = [];
+  renderFileList();
+  document.getElementById('existing-note').style.display = 'none';
+  document.getElementById('log').className = '';
+  document.getElementById('log').innerHTML = '';
+}
+
+function log(msg, cls) {
+  const box = document.getElementById('log');
+  box.classList.add('show');
+  const line = document.createElement('div');
+  if (cls) line.className = cls;
+  line.textContent = msg;
+  box.appendChild(line);
+  box.scrollTop = box.scrollHeight;
+}
+
+/* ════════════════════════════════════════════════════════════
+   GALLERY LIST
+════════════════════════════════════════════════════════════ */
+async function getManifest() {
+  const file = await ghGetFile(MANIFEST_PATH);
+  if (!file) return { slugs: [], sha: null };
+  const json = JSON.parse(decodeURIComponent(escape(atob(file.content.replace(/\n/g, '')))));
+  return { slugs: Array.isArray(json) ? json : [], sha: file.sha };
+}
+
+async function refreshGalleryList() {
+  const box = document.getElementById('gallery-list');
+  if (!localStorage.getItem('pix-gh-token')) {
+    box.innerHTML = '<p class="hint">Bitte zuerst GitHub-Token eintragen.</p>';
+    return;
+  }
+  box.innerHTML = '<p class="hint">Lade Galerien …</p>';
+  try {
+    const { slugs } = await getManifest();
+    if (slugs.length === 0) {
+      box.innerHTML = '<p class="hint">Noch keine Galerien angelegt.</p>';
+      return;
+    }
+    box.innerHTML = '';
+    for (const slug of slugs) {
+      const row = document.createElement('div');
+      row.className = 'gallery-row';
+      row.innerHTML = `
+        <span class="slug">${slug}</span>
+        <button class="btn-secondary btn-small" onclick="editGallery('${slug}')">Bearbeiten</button>
+        <button class="btn-danger btn-small" onclick="deleteGallery('${slug}')">Löschen</button>
+      `;
+      box.appendChild(row);
+    }
+  } catch (e) {
+    box.innerHTML = `<p class="hint" style="color:var(--err)">Fehler: ${e.message}</p>`;
+  }
+}
+
+async function editGallery(slug) {
+  resetForm();
+  document.getElementById('form-title').textContent = `Galerie bearbeiten: ${slug}`;
+  document.getElementById('gal-slug').value = slug;
+  document.getElementById('gal-slug').disabled = true;
+  document.getElementById('existing-note').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+async function deleteGallery(slug) {
+  if (!confirm(`Galerie "${slug}" wirklich vollständig löschen? Das kann nicht rückgängig gemacht werden.`)) return;
+  try {
+    log(`Lösche Galerie "${slug}" …`, 'log-mid');
+    const imgFiles = await ghListDir(`${GALLERIES_ROOT}/${slug}/img`);
+    for (const f of imgFiles) {
+      await ghDeleteFile(f.path, f.sha, `Galerie ${slug}: Foto entfernt`);
+    }
+    const sentinel = await ghGetFile(`${GALLERIES_ROOT}/${slug}/sentinel.bin`);
+    if (sentinel) await ghDeleteFile(sentinel.path, sentinel.sha, `Galerie ${slug}: sentinel entfernt`);
+
+    const { slugs, sha } = await getManifest();
+    const updated = slugs.filter(s => s !== slug);
+    await ghPutFile(MANIFEST_PATH, bytesToBase64(new TextEncoder().encode(JSON.stringify(updated))), `Galerie ${slug} gelöscht`, sha);
+
+    log(`✓ Galerie "${slug}" gelöscht.`, 'log-ok');
+    refreshGalleryList();
+  } catch (e) {
+    log(`✗ Fehler: ${e.message}`, 'log-err');
+  }
+}
+
+/* ════════════════════════════════════════════════════════════
+   SAVE GALLERY (create or update)
+════════════════════════════════════════════════════════════ */
+async function saveGallery() {
+  const slug = document.getElementById('gal-slug').value.trim();
+  const password = document.getElementById('gal-password').value;
+  const btn = document.getElementById('save-btn');
+
+  document.getElementById('log').innerHTML = '';
+  document.getElementById('log').classList.add('show');
+
+  if (!slug) { log('Bitte eine Galerie-Kennung (slug) eingeben.', 'log-err'); return; }
+  if (!password) { log('Bitte ein Kundenpasswort eingeben.', 'log-err'); return; }
+  if (selectedFiles.length === 0 && !document.getElementById('gal-slug').disabled) {
+    log('Bitte mindestens ein Foto auswählen.', 'log-err'); return;
+  }
+
+  btn.disabled = true;
+  try {
+    getToken(); // throws if missing
+
+    log('Leite Schlüssel aus Passwort ab …', 'log-mid');
+    const key = await deriveKey(password);
+
+    // 1. Replace photos if new ones were selected
+    if (selectedFiles.length > 0) {
+      log('Entferne alte Fotos dieser Galerie (falls vorhanden) …', 'log-mid');
+      const existing = await ghListDir(`${GALLERIES_ROOT}/${slug}/img`);
+      for (const f of existing) {
+        await ghDeleteFile(f.path, f.sha, `Galerie ${slug}: altes Foto entfernt`);
+      }
+
+      log(`Verschlüssele & lade ${selectedFiles.length} Foto(s) hoch …`, 'log-mid');
+      let i = 0;
+      for (const file of selectedFiles) {
+        i++;
+        const buf = new Uint8Array(await file.arrayBuffer());
+        const encBytes = await encryptBytes(buf, key);
+        const b64 = bytesToBase64(encBytes);
+        const path = `${GALLERIES_ROOT}/${slug}/img/${file.name}.enc`;
+        await ghPutFile(path, b64, `Galerie ${slug}: Foto hochgeladen`);
+        log(`  (${i}/${selectedFiles.length}) ${file.name} ✓`, 'log-ok');
+      }
+    }
+
+    // 2. Write sentinel.bin (always — reflects current password)
+    log('Aktualisiere Passwort-Prüfdatei (sentinel.bin) …', 'log-mid');
+    const sentinelBytes = await encryptBytes(new TextEncoder().encode(SENTINEL_VALUE), key);
+    const sentinelPath = `${GALLERIES_ROOT}/${slug}/sentinel.bin`;
+    const existingSentinel = await ghGetFile(sentinelPath);
+    await ghPutFile(sentinelPath, bytesToBase64(sentinelBytes), `Galerie ${slug}: Passwort aktualisiert`, existingSentinel ? existingSentinel.sha : undefined);
+
+    // 3. Update manifest.json
+    log('Aktualisiere Galerie-Liste (manifest.json) …', 'log-mid');
+    const { slugs, sha } = await getManifest();
+    if (!slugs.includes(slug)) {
+      slugs.push(slug);
+      await ghPutFile(MANIFEST_PATH, bytesToBase64(new TextEncoder().encode(JSON.stringify(slugs))), `Galerie ${slug} hinzugefügt`, sha);
+    }
+
+    log(`✓ Fertig! Galerie "${slug}" ist bereit.`, 'log-ok');
+    refreshGalleryList();
+  } catch (e) {
+    log(`✗ Fehler: ${e.message}`, 'log-err');
+  } finally {
+    btn.disabled = false;
+  }
+}
+</script>
+</body>
+</html>
