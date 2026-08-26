@@ -736,11 +736,11 @@
 /* ════════════════════════════════════════════════════════════
    CONFIG
 ════════════════════════════════════════════════════════════ */
-const GITHUB_USER    = 'denkenfeld';
-const GITHUB_REPO    = 'pix';
+const GITHUB_USER    = 'pix-fotostudio';
+const GITHUB_REPO    = 'kundengalerie';
 const GITHUB_BRANCH  = 'main';
-const GALLERIES_ROOT = 'galerie/galleries';   // galerie/galleries/<slug>/{sentinel.bin, img/*.enc}
-const MANIFEST_URL   = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/galerie/manifest.json`;
+const GALLERIES_ROOT = 'galleries';   // galleries/<slug>/{sentinel.bin, img/*.enc}
+const MANIFEST_URL   = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/manifest.json`;
 // No plaintext password stored here – AES-GCM key is derived at runtime via PBKDF2
 const PBKDF2_SALT    = 'PixStudio2026';   // must match encrypt.py / admin.html
 const PBKDF2_ITER    = 100000;
