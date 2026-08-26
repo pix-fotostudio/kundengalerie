@@ -314,16 +314,16 @@ function ghHeaders() {
 }
 
 async function ghGetFile(path) {
-  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
-  const resp = await fetch(url, { headers: ghHeaders() });
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}&_=${Date.now()}`;
+  const resp = await fetch(url, { headers: ghHeaders(), cache: 'no-store' });
   if (resp.status === 404) return null;
   if (!resp.ok) throw new Error(`GitHub-Fehler beim Lesen von ${path}: ${resp.status}`);
   return resp.json();
 }
 
 async function ghListDir(path) {
-  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}`;
-  const resp = await fetch(url, { headers: ghHeaders() });
+  const url = `https://api.github.com/repos/${GITHUB_USER}/${GITHUB_REPO}/contents/${path}?ref=${GITHUB_BRANCH}&_=${Date.now()}`;
+  const resp = await fetch(url, { headers: ghHeaders(), cache: 'no-store' });
   if (resp.status === 404) return [];
   if (!resp.ok) throw new Error(`GitHub-Fehler beim Auflisten von ${path}: ${resp.status}`);
   const data = await resp.json();
