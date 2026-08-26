@@ -214,6 +214,14 @@
       <p class="hint">Lade Galerien …</p>
     </div>
   </div>
+
+  <footer style="text-align:center;padding:20px 0 0;font-size:11px;color:var(--text-light);">
+    <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">Impressum</a>
+    &nbsp;•&nbsp;
+    <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">Datenschutz</a>
+    &nbsp;•&nbsp;
+    <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">AGB</a>
+  </footer>
 </div>
 
 <script>
@@ -278,6 +286,10 @@ function getToken() {
   const t = localStorage.getItem('pix-gh-token');
   if (!t) throw new Error('Kein GitHub-Token gespeichert. Bitte auf token.html eintragen.');
   return t;
+}
+
+function openLegal() {
+  window.open('https://www.pix-fotostudio.de/pix-rechtstexte.html', 'pix_legal', 'width=760,height=680,resizable=yes,scrollbars=yes');
 }
 
 /* ════════════════════════════════════════════════════════════

@@ -119,6 +119,14 @@
   <a class="back-link" href="admin.html">← Zurück zur Galerie-Verwaltung</a>
 </div>
 
+<footer style="position:fixed;bottom:0;left:0;right:0;text-align:center;padding:14px 12px;font-size:11px;color:var(--text-light);">
+  <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">Impressum</a>
+  &nbsp;•&nbsp;
+  <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">Datenschutz</a>
+  &nbsp;•&nbsp;
+  <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">AGB</a>
+</footer>
+
 <script>
 /* Must match the hash in admin.html so both pages share the same admin gate */
 const ADMIN_PW_HASH = 'b79ba16226a819f14726a1103cd364259bdbbc71fd8691611b6b7780526a778e';
@@ -174,6 +182,10 @@ function clearToken() {
   if (!confirm('Gespeichertes GitHub-Token wirklich löschen?')) return;
   localStorage.removeItem('pix-gh-token');
   renderStatus();
+}
+
+function openLegal() {
+  window.open('https://www.pix-fotostudio.de/pix-rechtstexte.html', 'pix_legal', 'width=760,height=680,resizable=yes,scrollbars=yes');
 }
 </script>
 </body>

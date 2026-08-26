@@ -717,6 +717,19 @@
 
 <div class="toast" id="toast">✓ Auswahl erfolgreich gesendet!</div>
 
+<footer style="position:fixed;bottom:0;left:0;right:0;z-index:15;text-align:center;padding:8px 12px;font-size:11px;color:var(--text-light);background:rgba(247,243,239,0.6);backdrop-filter:blur(6px);">
+  <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">Impressum</a>
+  &nbsp;•&nbsp;
+  <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">Datenschutz</a>
+  &nbsp;•&nbsp;
+  <a href="javascript:void(0)" onclick="openLegal()" style="color:inherit;text-decoration:underline;">AGB</a>
+</footer>
+<script>
+function openLegal() {
+  window.open('https://www.pix-fotostudio.de/pix-rechtstexte.html', 'pix_legal', 'width=760,height=680,resizable=yes,scrollbars=yes');
+}
+</script>
+
 <form id="hidden-form"
   action="https://formsubmit.co/fotostudiopix@gmail.com"
   method="POST"
