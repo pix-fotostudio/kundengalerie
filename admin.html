@@ -170,21 +170,12 @@
 <!-- ═══ MAIN ADMIN UI ═══ -->
 <div class="wrap" id="screen-admin" style="display:none;">
   <div class="top-actions">
+    <a class="link-btn" href="javascript:location.reload()" style="margin-right:16px;">Seite neu laden</a>
+    <a class="link-btn" href="token.html" style="margin-right:16px;">Token verwalten</a>
     <button class="link-btn" onclick="logout()">Abmelden</button>
   </div>
   <div class="logo">Pix Fotostudio</div>
   <h1 class="title">Galerien verwalten</h1>
-
-  <!-- GitHub Token -->
-  <div class="card">
-    <h2>GitHub-Zugang</h2>
-    <p class="hint">Wird nur lokal in diesem Browser gespeichert (localStorage) und ausschließlich an GitHub gesendet.</p>
-    <div class="field-with-btn">
-      <input type="password" id="gh-token" placeholder="GitHub Personal Access Token (ghp_…)" />
-      <button class="btn-secondary" onclick="saveToken()">Speichern</button>
-    </div>
-    <div id="token-status" style="font-size:12px;color:var(--text-mid);"></div>
-  </div>
 
   <!-- Create / Update Gallery -->
   <div class="card">
@@ -211,7 +202,6 @@
     </p>
 
     <button class="btn-primary" id="save-btn" onclick="saveGallery()">Galerie speichern &amp; hochladen</button>
-    <button class="btn-secondary" style="width:100%;margin-top:8px;" onclick="resetForm()">Neues Formular / Abbrechen</button>
 
     <div id="log"></div>
   </div>
@@ -273,7 +263,6 @@ function logout() {
 function showAdmin() {
   document.getElementById('screen-login').style.display = 'none';
   document.getElementById('screen-admin').style.display = 'block';
-  loadToken();
   refreshGalleryList();
 }
 
@@ -282,24 +271,12 @@ if (sessionStorage.getItem('pix-admin-ok') === '1') {
 }
 
 /* ════════════════════════════════════════════════════════════
-   GITHUB TOKEN
+   GITHUB TOKEN — entered/managed on token.html; this page just
+   reads it from localStorage when needed
 ════════════════════════════════════════════════════════════ */
-function loadToken() {
-  const t = localStorage.getItem('pix-gh-token');
-  const status = document.getElementById('token-status');
-  status.textContent = t ? 'Token gespeichert ✓' : 'Kein Token gespeichert.';
-  if (t) document.getElementById('gh-token').placeholder = '•••••••••••••••• (gespeichert)';
-}
-function saveToken() {
-  const t = document.getElementById('gh-token').value.trim();
-  if (!t) return;
-  localStorage.setItem('pix-gh-token', t);
-  document.getElementById('gh-token').value = '';
-  loadToken();
-}
 function getToken() {
   const t = localStorage.getItem('pix-gh-token');
-  if (!t) throw new Error('Kein GitHub-Token gespeichert. Bitte oben eintragen.');
+  if (!t) throw new Error('Kein GitHub-Token gespeichert. Bitte auf token.html eintragen.');
   return t;
 }
 
