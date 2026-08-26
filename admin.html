@@ -114,9 +114,20 @@
     background: rgba(255,255,255,0.6);
     border: 1px solid rgba(200,185,170,0.3);
     border-radius: 8px; padding: 10px 14px;
+    transition: opacity .25s;
   }
+  .gallery-row.pending { opacity: 0.55; }
   .gallery-row .slug { flex: 1; font-size: 14px; font-weight: 500; }
   .gallery-row .count { font-size: 12px; color: var(--text-light); }
+  .mini-spinner {
+    width: 14px; height: 14px; border-radius: 50%;
+    border: 2px solid rgba(184,124,85,0.25);
+    border-top-color: var(--accent);
+    animation: mspin 0.8s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes mspin { to { transform: rotate(360deg); } }
+  .pending-label { font-size: 12px; color: var(--text-mid); font-style: italic; }
 
   #log {
     font-family: monospace; font-size: 12px; line-height: 1.6;
@@ -448,7 +459,12 @@ function log(msg, cls) {
 
 /* ════════════════════════════════════════════════════════════
    GALLERY LIST
+   Kept in a local array so the UI updates instantly (optimistic)
+   instead of waiting on a fresh GitHub read after every write.
 ════════════════════════════════════════════════════════════ */
+let knownSlugs  = [];
+let pendingSlug = null;   // slug currently being created/updated, or null
+
 async function getManifest() {
   const file = await ghGetFile(MANIFEST_PATH);
   if (!file) return { slugs: [], sha: null };
@@ -457,31 +473,44 @@ async function getManifest() {
 }
 
 async function refreshGalleryList() {
-  const box = document.getElementById('gallery-list');
   if (!localStorage.getItem('pix-gh-token')) {
-    box.innerHTML = '<p class="hint">Bitte zuerst GitHub-Token eintragen.</p>';
+    document.getElementById('gallery-list').innerHTML = '<p class="hint">Bitte zuerst GitHub-Token eintragen.</p>';
     return;
   }
-  box.innerHTML = '<p class="hint">Lade Galerien …</p>';
+  document.getElementById('gallery-list').innerHTML = '<p class="hint">Lade Galerien …</p>';
   try {
     const { slugs } = await getManifest();
-    if (slugs.length === 0) {
-      box.innerHTML = '<p class="hint">Noch keine Galerien angelegt.</p>';
-      return;
-    }
-    box.innerHTML = '';
-    for (const slug of slugs) {
-      const row = document.createElement('div');
-      row.className = 'gallery-row';
-      row.innerHTML = `
-        <span class="slug">${slug}</span>
-        <button class="btn-secondary btn-small" onclick="editGallery('${slug}')">Bearbeiten</button>
-        <button class="btn-danger btn-small" onclick="deleteGallery('${slug}')">Löschen</button>
-      `;
-      box.appendChild(row);
-    }
+    knownSlugs = slugs;
+    renderGalleryList();
   } catch (e) {
-    box.innerHTML = `<p class="hint" style="color:var(--err)">Fehler: ${e.message}</p>`;
+    document.getElementById('gallery-list').innerHTML = `<p class="hint" style="color:var(--err)">Fehler: ${e.message}</p>`;
+  }
+}
+
+function renderGalleryList() {
+  const box = document.getElementById('gallery-list');
+  const rows = [...knownSlugs];
+  const isNewPending = pendingSlug && !rows.includes(pendingSlug);
+  if (isNewPending) rows.push(pendingSlug);
+
+  if (rows.length === 0) {
+    box.innerHTML = '<p class="hint">Noch keine Galerien angelegt.</p>';
+    return;
+  }
+
+  box.innerHTML = '';
+  for (const slug of rows) {
+    const isPending = slug === pendingSlug;
+    const row = document.createElement('div');
+    row.className = 'gallery-row' + (isPending ? ' pending' : '');
+    row.innerHTML = isPending
+      ? `<span class="slug">${slug}</span>
+         <span class="mini-spinner"></span>
+         <span class="pending-label">wird gespeichert …</span>`
+      : `<span class="slug">${slug}</span>
+         <button class="btn-secondary btn-small" onclick="editGallery('${slug}')">Bearbeiten</button>
+         <button class="btn-danger btn-small" onclick="deleteGallery('${slug}')">Löschen</button>`;
+    box.appendChild(row);
   }
 }
 
@@ -510,7 +539,8 @@ async function deleteGallery(slug) {
     await ghPutFile(MANIFEST_PATH, bytesToBase64(new TextEncoder().encode(JSON.stringify(updated))), `Galerie ${slug} gelöscht`, sha);
 
     log(`✓ Galerie "${slug}" gelöscht.`, 'log-ok');
-    refreshGalleryList();
+    knownSlugs = knownSlugs.filter(s => s !== slug);
+    renderGalleryList();
   } catch (e) {
     log(`✗ Fehler: ${e.message}`, 'log-err');
   }
@@ -534,6 +564,8 @@ async function saveGallery() {
   }
 
   btn.disabled = true;
+  pendingSlug = slug;
+  renderGalleryList();
   try {
     getToken(); // throws if missing
 
@@ -577,9 +609,14 @@ async function saveGallery() {
     }
 
     log(`✓ Fertig! Galerie "${slug}" ist bereit.`, 'log-ok');
-    refreshGalleryList();
+    // Optimistic update: add to local list immediately, no extra GitHub round-trip needed
+    if (!knownSlugs.includes(slug)) knownSlugs.push(slug);
+    pendingSlug = null;
+    renderGalleryList();
   } catch (e) {
     log(`✗ Fehler: ${e.message}`, 'log-err');
+    pendingSlug = null;
+    renderGalleryList();
   } finally {
     btn.disabled = false;
   }
