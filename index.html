@@ -812,7 +812,7 @@ async function unlock() {
     for (const slug of slugs) {
       const url = `https://raw.githubusercontent.com/${GITHUB_USER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${GALLERIES_ROOT}/${slug}/sentinel.bin`;
       try {
-        const sResp = await fetch(url, { cache: 'no-store' });
+        const sResp = await fetch(noCacheUrl(url), { cache: 'no-store' });
         if (!sResp.ok) continue;
         const sBuf = new Uint8Array(await sResp.arrayBuffer());
         await crypto.subtle.decrypt({ name: 'AES-GCM', iv: sBuf.slice(0, 12) }, key, sBuf.slice(12));
@@ -846,9 +846,16 @@ async function unlock() {
   }
 }
 
+// GitHub's raw.githubusercontent.com CDN caches files for a few minutes even
+// after they're updated. Appending a changing query param busts that cache
+// so freshly-created/edited galleries are found immediately.
+function noCacheUrl(url) {
+  return url + (url.includes('?') ? '&' : '?') + '_=' + Date.now();
+}
+
 async function loadManifest() {
   try {
-    const resp = await fetch(MANIFEST_URL, { cache: 'no-store' });
+    const resp = await fetch(noCacheUrl(MANIFEST_URL), { cache: 'no-store' });
     if (!resp.ok) return [];
     const list = await resp.json();
     return Array.isArray(list) ? list : [];
@@ -893,7 +900,7 @@ async function loadImages() {
       await Promise.all(
         allImages.slice(i, i + BATCH).map(async (imgFile) => {
           try {
-            const url  = RAW_BASE + encodeURIComponent(imgFile.name);
+            const url  = noCacheUrl(RAW_BASE + encodeURIComponent(imgFile.name));
             const r    = await fetch(url);
             const buf  = await r.arrayBuffer();
             const dec  = await decryptBuffer(buf);
